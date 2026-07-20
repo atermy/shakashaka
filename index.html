@@ -107,7 +107,7 @@
 	content="https://play.shakashaka.site/social-preview.png?v=1">
 </head>
 <body>
-	<canvas id="canvas">
+	<canvas id="canvas" tabindex="0" autofocus>
 		이 브라우저는 HTML canvas를 지원하지 않습니다.
 	</canvas>
 
@@ -121,10 +121,24 @@
 		const bootSplash = document.getElementById("boot-splash");
 		const engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":13912496,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
 
+		function focusGameCanvas() {
+			try {
+				canvas.focus({ preventScroll: true });
+			} catch (_error) {
+				canvas.focus();
+			}
+		}
+
+		// 브라우저에서는 canvas에 포커스가 없으면 키보드 입력이
+		// Godot에 전달되지 않을 수 있으므로 시작 시와 클릭 시 재포커스한다.
+		canvas.addEventListener("pointerdown", focusGameCanvas);
+		window.addEventListener("focus", focusGameCanvas);
+
 		engine.startGame({
 			canvas: canvas
 		}).then(() => {
 			bootSplash.remove();
+			focusGameCanvas();
 		}).catch((error) => {
 			console.error(error);
 			bootSplash.setAttribute("aria-hidden", "false");
